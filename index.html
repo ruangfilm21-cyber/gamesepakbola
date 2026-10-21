@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Football Mobile</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#15251c;color:white;font-family:Arial;text-align:center}
+h2{margin:12px}
+#score{font-size:25px;margin:10px}
+canvas{width:100%;max-width:600px;display:block;margin:auto;background:#238443;touch-action:none}
+.controls{display:flex;justify-content:center;gap:12px;padding:14px;flex-wrap:wrap}
+button{font-size:18px;padding:14px 20px;border:0;border-radius:12px;background:#f5f5f5;color:#17251b;font-weight:bold}
+p{font-size:14px}
+</style>
+</head>
+<body>
+<h2>⚽ Football Mobile</h2>
+<div id="score">KAMU 0 - 0 LAWAN</div>
+<canvas id="game" width="360" height="500"></canvas>
+<div class="controls">
+<button id="up">⬆️</button>
+<button id="left">⬅️</button>
+<button id="kick">TENDANG ⚽</button>
+<button id="right">➡️</button>
+<button id="down">⬇️</button>
+</div>
+<p>Gerakkan pemain biru, dekati bola, lalu tendang ke gawang atas!</p>
+<script>
+const c=document.getElementById('game');
+const x=c.getContext('2d');
+const p={x:180,y:390,r:12};
+const ball={x:180,y:250,vx:0,vy:0,r:7};
+const enemy={x:180,y:95,r:13};
+let score=0,against=0;
+const keys={};
+function hold(id,key){
+const b=document.getElementById(id);
+b.addEventListener('pointerdown',e=>{e.preventDefault();keys[key]=true});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>
+b.addEventListener(ev,()=>keys[key]=false));
+}
+hold('up','up');hold('down','down');
+hold('left','left');hold('right','right');
+function reset(){
+ball.x=180;ball.y=250;ball.vx=0;ball.vy=0;
+p.x=180;p.y=390;
+document.getElementById('score').textContent=`KAMU ${score} - ${against} LAWAN`;
+}
+document.getElementById('kick').onclick=()=>{
+let dx=ball.x-p.x,dy=ball.y-p.y;
+if(Math.hypot(dx,dy)<42){
+let len=Math.hypot(dx,dy)||1;
+ball.vx=dx/len*5;
+ball.vy=-7;
+}
+};
+function draw(){
+x.clearRect(0,0,360,500);
+x.fillStyle='#238443';x.fillRect(0,0,360,500);
+x.strokeStyle='white';x.lineWidth=2;
+x.strokeRect(10,10,340,480);
+x.beginPath();x.moveTo(10,250);x.lineTo(350,250);
+x.moveTo(125,10);x.lineTo(125,55);x.lineTo(235,55);x.lineTo(235,10);
+x.moveTo(125,490);x.lineTo(125,445);x.lineTo(235,445);x.lineTo(235,490);
+x.arc(180,250,48,0,Math.PI*2);x.stroke();
+x.fillStyle='white';x.fillRect(135,5,90,8);
+x.fillStyle='#1877f2';x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill();
+x.fillStyle='white';x.fillText('KAMU',p.x-18,p.y+25);
+x.fillStyle='#f44336';x.beginPath();x.arc(enemy.x,enemy.y,enemy.r,0,7);x.fill();
+x.fillStyle='white';x.beginPath();x.arc(ball.x,ball.y,ball.r,0,7);x.fill();
+if(keys.up)p.y-=3;if(keys.down)p.y+=3;
+if(keys.left)p.x-=3;if(keys.right)p.x+=3;
+p.x=Math.max(25,Math.min(335,p.x));
+p.y=Math.max(75,Math.min(475,p.y));
+ball.x+=ball.vx;ball.y+=ball.vy;
+ball.vx*=.985;ball.vy*=.985;
+let d=Math.hypot(ball.x-enemy.x,ball.y-enemy.y);
+if(d<enemy.r+ball.r){
+ball.vy=4;ball.vx=(ball.x-enemy.x)*.3;
+}
+if(ball.y<15&&ball.x>135&&ball.x<225){
+score++;reset();
+}
+if(ball.y>485){against++;reset();}
+if(ball.x<18||ball.x>342)ball.vx*=-1;
+if(ball.y<15)ball.vy=Math.abs(ball.vy);
+if(ball.y>485)ball.vy=-Math.abs(ball.vy);
+requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
